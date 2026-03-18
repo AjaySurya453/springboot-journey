@@ -21,6 +21,7 @@ building real projects and learning in public.
 |-----|-------|-------------|
 | Day 1 | Spring Boot Setup | @SpringBootApplication, @GetMapping, Tomcat |
 | Day 2 | CRUD REST API | @RestController, @PathVariable, @RequestBody |
+| Day 3 | Spring Data JPA | @Entity, @Repository, JPA, PostgreSQL connection |
 
 *(Updated daily)*
 
