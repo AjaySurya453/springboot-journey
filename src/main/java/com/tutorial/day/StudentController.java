@@ -1,39 +1,46 @@
 package com.tutorial.day;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/students")
 public class StudentController {
-    private List<Student> students =new ArrayList<>();
 
-    public StudentController(){
-        students.add(new Student(1,"Ajay","ajaysurya4532gmail.com"));
-        students.add(new Student(2,"Ravi","ravi@gmail.com"));
-    }
+    @Autowired  // Spring injects the repository automatically
+    private StudentRepository repository;
+
+    // READ ALL — from real database now!
     @GetMapping
-    public List<Student> getAllStudents(){return students;}
+    public List<Student> getAllStudents() {
+        return repository.findAll();
+    }
 
+    // READ ONE
     @GetMapping("/{id}")
-    public Student getStudent(@PathVariable int id){return students.get(id-1);}
+    public Student getStudent(@PathVariable int id) {
+        return repository.findById(id).orElse(null);
+    }
 
+    // CREATE — saves to database!
     @PostMapping
-    public String setStudent(@RequestBody Student student){
-        students.add(student);
-        return student.getName()+"sucessfully added";
+    public Student addStudent(@RequestBody Student student) {
+        return repository.save(student);
     }
 
+    // UPDATE
     @PutMapping("/{id}")
-    public String updateStudent(@PathVariable int id, @RequestBody Student updated){
-        students.set(id-1, updated);
-        return "Student"+id+"updated!";
+    public Student updateStudent(@PathVariable int id,
+                                 @RequestBody Student updated) {
+        updated.setId(id);
+        return repository.save(updated);
     }
 
+    // DELETE
     @DeleteMapping("/{id}")
-    public String deleteStudent(@PathVariable int id){
-        Student remove=students.remove(id -1);
-        return remove.getName()+"removed sucessfully";
+    public String deleteStudent(@PathVariable int id) {
+        repository.deleteById(id);
+        return "Student " + id + " deleted!";
     }
 }
