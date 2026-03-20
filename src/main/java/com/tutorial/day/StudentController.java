@@ -1,5 +1,6 @@
 package com.tutorial.day;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -9,38 +10,36 @@ import java.util.List;
 public class StudentController {
 
     @Autowired  // Spring injects the repository automatically
-    private StudentRepository repository;
+    private StudentService service;
 
     // READ ALL — from real database now!
     @GetMapping
     public List<Student> getAllStudents() {
-        return repository.findAll();
+        return service.getAllStudents();
     }
 
     // READ ONE
     @GetMapping("/{id}")
     public Student getStudent(@PathVariable int id) {
-        return repository.findById(id).orElse(null);
+        return service.getStudentById(id);
     }
 
     // CREATE — saves to database!
     @PostMapping
-    public Student addStudent(@RequestBody Student student) {
-        return repository.save(student);
+    public Student addStudent(@Valid @RequestBody Student student) {
+        return service.addStudent(student);
     }
 
     // UPDATE
     @PutMapping("/{id}")
     public Student updateStudent(@PathVariable int id,
-                                 @RequestBody Student updated) {
-        updated.setId(id);
-        return repository.save(updated);
+                                 @Valid @RequestBody Student updated) {
+        return service.updateStudent(id, updated);
     }
 
     // DELETE
     @DeleteMapping("/{id}")
     public String deleteStudent(@PathVariable int id) {
-        repository.deleteById(id);
-        return "Student " + id + " deleted!";
+        return service.deleteStudent(id);
     }
 }

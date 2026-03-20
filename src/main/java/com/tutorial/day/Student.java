@@ -1,18 +1,20 @@
 package com.tutorial.day;
 
 import jakarta.persistence.*;
-
-@Entity                    // "This class = a database table"
-@Table(name = "students")  // "Name the table 'students'"
+import jakarta.validation.constraints.*;
+@Entity
+@Table(name = "students")
 public class Student {
 
-    @Id                                        // "This is the primary key"
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // "Auto increment ID"
     private Integer id;
 
-    // "This = a column"
+    @NotBlank(message = "Name cannot not be empty")
+    @Size(min = 1, max = 50, message = "Name don't exceed 50 characters")
     private String name;
-
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "please provide valid email")
     private String email;
 
     // Keep your existing constructors, getters, setters
