@@ -1,6 +1,9 @@
 package com.tutorial.day;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -10,26 +13,64 @@ import java.util.Map;
 public class AuthController {
 
     @Autowired
+    private AuthenticationManager authManager;
+
+    @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Simple login — hardcoded user for now
-    // Day 7+ we'll add real User entity + DB
-    @PostMapping("/login")
-    public Map<String, String> login(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
-        String password = request.get("password");
+    // REGISTER — create new user
+    @PostMapping("/register")
+    public ResponseEntity<Map<String, String>> register(
+            @Valid @RequestBody User user) {
 
-        // Hardcoded check for now
-        if ("ajay".equals(username) && "password123".equals(password)) {
-            String token = jwtUtil.generateToken(username);
-            return Map.of(
+        // Check if username already exists
+        if (userRepository.findByUsername(
+                user.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", "Username already exists!"));
+        }
+
+        // Hash password before saving — NEVER save plain text
+        user.setPassword(
+                passwordEncoder.encode(user.getPassword()));
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(
+                Map.of("message", "User registered successfully!"));
+    }
+
+    // LOGIN — returns JWT token
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(
+            @RequestBody Map<String, String> request) {
+        try {
+            // Spring Security verifies username + password
+            authManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.get("username"),
+                            request.get("password")
+                    )
+            );
+
+            // If we reach here — credentials are valid!
+            String token = jwtUtil.generateToken(
+                    request.get("username"));
+
+            return ResponseEntity.ok(Map.of(
                     "token", token,
                     "message", "Login successful!"
-            );
+            ));
+
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(401).body(
+                    Map.of("message", "Invalid username or password"));
         }
-        throw new RuntimeException("Invalid credentials");
     }
 }
